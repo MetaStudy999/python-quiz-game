@@ -67,7 +67,7 @@ class QuizGame:
         try:
             while True:
                 self._print_menu()
-                selected_menu = self._prompt_number("선택: ", 1, 5)
+                selected_menu = self._prompt_number("선택: ", 1, 6)
                 print()
 
                 if selected_menu == 1:
@@ -78,6 +78,8 @@ class QuizGame:
                     self.show_quiz_list()
                 elif selected_menu == 4:
                     self.show_best_score()
+                elif selected_menu == 5:
+                    self.delete_quiz()
                 else:
                     self._save_state()
                     print("프로그램을 종료합니다. 데이터를 저장했습니다.")
@@ -97,7 +99,8 @@ class QuizGame:
         print("2. 퀴즈 추가")
         print("3. 퀴즈 목록")
         print("4. 점수 확인")
-        print("5. 종료")
+        print("5. 퀴즈 삭제")
+        print("6. 종료")
         print("=" * 40)
 
     def _prompt_text(self, message: str) -> str:
@@ -246,6 +249,34 @@ class QuizGame:
 
         score_text = self._format_score(self.best_score)
         print(f"최고 점수: {score_text}")
+        print()
+
+    def delete_quiz(self) -> None:
+        if not self.quizzes:
+            print("삭제할 퀴즈가 없습니다.")
+            print()
+            return
+
+        print(f"삭제할 퀴즈를 선택하세요. (총 {len(self.quizzes)}개)")
+        print("-" * 40)
+        for index, quiz in enumerate(self.quizzes, start=1):
+            print(f"[{index}] {quiz.question}")
+        print("-" * 40)
+
+        selected_index = self._prompt_number(
+            f"삭제할 번호를 입력하세요 (취소는 0, 0-{len(self.quizzes)}): ",
+            0,
+            len(self.quizzes),
+        )
+
+        if selected_index == 0:
+            print("퀴즈 삭제를 취소했습니다.")
+            print()
+            return
+
+        deleted_quiz = self.quizzes.pop(selected_index - 1)
+        self._save_state()
+        print(f"삭제되었습니다: {deleted_quiz.question}")
         print()
 
     def _load_state(self) -> None:
