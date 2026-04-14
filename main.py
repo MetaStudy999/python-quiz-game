@@ -1,5 +1,9 @@
+from quiz_game import QuizGame
+
+
 def main() -> None:
-    print("나만의 퀴즈 게임 프로젝트를 준비 중입니다.")
+    game = QuizGame()
+    game.run()
 
 
 if __name__ == "__main__":
