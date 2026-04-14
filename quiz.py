@@ -1,8 +1,11 @@
 class Quiz:
-    def __init__(self, question: str, choices: list[str], answer: int) -> None:
+    def __init__(
+        self, question: str, choices: list[str], answer: int, hint: str = ""
+    ) -> None:
         self.question = question.strip()
         self.choices = [choice.strip() for choice in choices]
         self.answer = answer
+        self.hint = hint.strip()
         self._validate()
 
     def _validate(self) -> None:
@@ -29,11 +32,15 @@ class Quiz:
     def is_correct(self, selected_answer: int) -> bool:
         return selected_answer == self.answer
 
+    def has_hint(self) -> bool:
+        return bool(self.hint)
+
     def to_dict(self) -> dict:
         return {
             "question": self.question,
             "choices": self.choices,
             "answer": self.answer,
+            "hint": self.hint,
         }
 
     @classmethod
@@ -49,4 +56,5 @@ class Quiz:
             question=str(data.get("question", "")),
             choices=[str(choice) for choice in raw_choices],
             answer=int(data.get("answer", 0)),
+            hint=str(data.get("hint", "")),
         )

@@ -11,31 +11,37 @@ DEFAULT_QUIZ_DATA = [
         "question": "Python에서 문자열을 이어 붙일 때 사용하는 연산자는 무엇인가요?",
         "choices": ["+", "-", "*", "/"],
         "answer": 1,
+        "hint": "문자열 결합은 덧셈 기호를 사용합니다.",
     },
     {
         "question": "다음 중 리스트를 나타내는 자료형 표기는 무엇인가요?",
         "choices": ["{}", "()", "[]", "<>"],
         "answer": 3,
+        "hint": "리스트는 대괄호를 사용합니다.",
     },
     {
         "question": "조건이 참일 때만 코드를 실행하도록 만드는 문장은 무엇인가요?",
         "choices": ["for", "if", "while", "def"],
         "answer": 2,
+        "hint": "영어로 '만약'이라는 뜻의 키워드입니다.",
     },
     {
         "question": "Git에서 작업 내역을 저장하는 기록 단위를 무엇이라고 하나요?",
         "choices": ["clone", "branch", "commit", "pull"],
         "answer": 3,
+        "hint": "변경 이력을 남길 때 사용하는 명령어 이름과 같습니다.",
     },
     {
         "question": "원격 저장소의 변경 사항을 내 컴퓨터로 가져오는 Git 명령어는 무엇인가요?",
         "choices": ["push", "merge", "checkout", "pull"],
         "answer": 4,
+        "hint": "밀어 넣는(push)의 반대 방향으로 생각해 보세요.",
     },
     {
         "question": "함수를 정의할 때 사용하는 Python 키워드는 무엇인가요?",
         "choices": ["class", "return", "def", "import"],
         "answer": 3,
+        "hint": "define의 앞부분을 줄여 쓴 형태입니다.",
     },
 ]
 
@@ -143,13 +149,16 @@ class QuizGame:
         selected_quizzes = random.sample(self.quizzes, k=question_count)
         total_questions = len(selected_quizzes)
         correct_count = 0
+        hints_used = 0
 
         print(f"📝 퀴즈를 시작합니다! (총 {total_questions}문제, 랜덤 출제)")
         print()
 
         for index, quiz in enumerate(selected_quizzes, start=1):
             quiz.display(index)
-            selected_answer = self._prompt_number("정답 입력 (1-4): ", 1, 4)
+            selected_answer, used_hint = self._prompt_answer_with_hint(quiz)
+            if used_hint:
+                hints_used += 1
 
             if quiz.is_correct(selected_answer):
                 correct_count += 1
@@ -159,17 +168,21 @@ class QuizGame:
 
             print()
 
-        points = int((correct_count / total_questions) * 100)
+        hint_penalty = hints_used * 10
+        points = max(0, int((correct_count / total_questions) * 100) - hint_penalty)
         result = {
             "points": points,
             "correct_count": correct_count,
             "total_questions": total_questions,
+            "hints_used": hints_used,
         }
 
         print("=" * 40)
         print(
             f"결과: {total_questions}문제 중 {correct_count}문제 정답! ({points}점)"
         )
+        if hints_used:
+            print(f"힌트 사용: {hints_used}회 (-{hint_penalty}점)")
 
         if self._is_new_best_score(result):
             self.best_score = result
@@ -203,8 +216,9 @@ class QuizGame:
             choice = self._prompt_text(f"선택지 {index}: ")
             choices.append(choice)
 
+        hint = self._safe_input("힌트 (선택 입력, Enter로 건너뛰기): ").strip()
         answer = self._prompt_number("정답 번호 (1-4): ", 1, 4)
-        self.quizzes.append(Quiz(question, choices, answer))
+        self.quizzes.append(Quiz(question, choices, answer, hint))
         self._save_state()
         print("퀴즈가 추가되었습니다.")
         print()
@@ -289,6 +303,39 @@ class QuizGame:
             quizzes.append(Quiz.from_dict(raw_quiz))
 
         return quizzes
+
+    def _prompt_answer_with_hint(self, quiz: Quiz) -> tuple[int, bool]:
+        hint_was_used = False
+
+        while True:
+            if quiz.has_hint():
+                raw_value = self._safe_input("정답 입력 (1-4, 힌트는 h): ").strip()
+            else:
+                raw_value = self._safe_input("정답 입력 (1-4): ").strip()
+
+            if not raw_value:
+                print("입력이 비어 있습니다. 다시 입력해 주세요.")
+                continue
+
+            if quiz.has_hint() and raw_value.lower() == "h":
+                print(f"힌트: {quiz.hint}")
+                hint_was_used = True
+                continue
+
+            try:
+                selected_answer = int(raw_value)
+            except ValueError:
+                if quiz.has_hint():
+                    print("잘못된 입력입니다. 1-4 또는 h를 입력하세요.")
+                else:
+                    print("잘못된 입력입니다. 1-4 사이의 숫자를 입력하세요.")
+                continue
+
+            if selected_answer < 1 or selected_answer > 4:
+                print("허용 범위를 벗어났습니다. 1-4 사이의 숫자를 입력하세요.")
+                continue
+
+            return selected_answer, hint_was_used
 
     def _load_best_score(self, raw_best_score: Optional[dict]) -> Optional[dict]:
         if raw_best_score is None:
