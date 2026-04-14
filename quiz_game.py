@@ -151,7 +151,18 @@ class QuizGame:
         print()
 
     def show_quiz_list(self) -> None:
-        print(f"현재 등록된 퀴즈 수: {len(self.quizzes)}")
+        if not self.quizzes:
+            print("등록된 퀴즈가 없습니다.")
+            print()
+            return
+
+        print(f"등록된 퀴즈 목록 (총 {len(self.quizzes)}개)")
+        print("-" * 40)
+
+        for index, quiz in enumerate(self.quizzes, start=1):
+            print(f"[{index}] {quiz.question}")
+
+        print("-" * 40)
         print()
 
     def show_best_score(self) -> None:
