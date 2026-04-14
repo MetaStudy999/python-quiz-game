@@ -103,3 +103,5 @@ git clone <GitHub 저장소 URL>
 ```bash
 git pull
 ```
+
+실습 메모: GitHub에서 `clone`한 복제본으로 README를 수정한 뒤 `push`했고, 원래 작업 디렉터리에서 `pull`로 반영을 확인했습니다.
