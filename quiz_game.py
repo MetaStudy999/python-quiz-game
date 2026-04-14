@@ -1,5 +1,7 @@
 import json
+import os
 import random
+import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -58,12 +60,14 @@ class QuizGame:
         self.best_score: Optional[dict] = None
         self.score_history: list[dict] = []
         self.startup_message = ""
+        self.startup_message_level = "info"
+        self.use_color = self._supports_color()
         self._load_state()
 
     def run(self) -> None:
         self._print_title()
         if self.startup_message:
-            print(self.startup_message)
+            print(self._status_text(self.startup_message, level=self.startup_message_level))
             print("=" * 40)
 
         try:
@@ -84,26 +88,27 @@ class QuizGame:
                     self.delete_quiz()
                 else:
                     self._save_state()
-                    print("프로그램을 종료합니다. 데이터를 저장했습니다.")
+                    print(self._info_text("프로그램을 종료합니다. 데이터를 저장했습니다.", "💾"))
                     return
         except SafeExitRequested:
             print()
-            print("입력이 중단되어 현재 데이터를 저장한 뒤 종료합니다.")
+            print(self._warning_text("입력이 중단되어 현재 데이터를 저장한 뒤 종료합니다."))
             self._save_state()
 
     def _print_title(self) -> None:
-        print("=" * 40)
-        print("        나만의 퀴즈 게임")
-        print("=" * 40)
+        line = self._style("=" * 40, color="36", bold=True)
+        print(line)
+        print(self._style("      🎯 나만의 퀴즈 게임 🎯", color="35", bold=True))
+        print(line)
 
     def _print_menu(self) -> None:
-        print("1. 퀴즈 풀기")
-        print("2. 퀴즈 추가")
-        print("3. 퀴즈 목록")
-        print("4. 점수 확인")
-        print("5. 퀴즈 삭제")
-        print("6. 종료")
-        print("=" * 40)
+        print(self._style("1. 📝 퀴즈 풀기", color="36"))
+        print(self._style("2. ➕ 퀴즈 추가", color="32"))
+        print(self._style("3. 📋 퀴즈 목록", color="34"))
+        print(self._style("4. 🏆 점수 확인", color="33"))
+        print(self._style("5. 🗑️ 퀴즈 삭제", color="31"))
+        print(self._style("6. 👋 종료", color="35"))
+        print(self._style("=" * 40, color="36", bold=True))
 
     def _prompt_text(self, message: str) -> str:
         while True:
@@ -112,28 +117,24 @@ class QuizGame:
             if raw_value:
                 return raw_value
 
-            print("입력이 비어 있습니다. 다시 입력해 주세요.")
+            print(self._warning_text("입력이 비어 있습니다. 다시 입력해 주세요."))
 
     def _prompt_number(self, message: str, minimum: int, maximum: int) -> int:
         while True:
             raw_value = self._safe_input(message).strip()
 
             if not raw_value:
-                print("입력이 비어 있습니다. 다시 입력해 주세요.")
+                print(self._warning_text("입력이 비어 있습니다. 다시 입력해 주세요."))
                 continue
 
             try:
                 number = int(raw_value)
             except ValueError:
-                print(
-                    f"잘못된 입력입니다. {minimum}-{maximum} 사이의 숫자를 입력하세요."
-                )
+                print(self._warning_text(f"잘못된 입력입니다. {minimum}-{maximum} 사이의 숫자를 입력하세요."))
                 continue
 
             if number < minimum or number > maximum:
-                print(
-                    f"허용 범위를 벗어났습니다. {minimum}-{maximum} 사이의 숫자를 입력하세요."
-                )
+                print(self._warning_text(f"허용 범위를 벗어났습니다. {minimum}-{maximum} 사이의 숫자를 입력하세요."))
                 continue
 
             return number
@@ -146,7 +147,7 @@ class QuizGame:
 
     def play_quiz(self) -> None:
         if not self.quizzes:
-            print("등록된 퀴즈가 없어 게임을 시작할 수 없습니다.")
+            print(self._warning_text("등록된 퀴즈가 없어 게임을 시작할 수 없습니다."))
             print()
             return
 
@@ -156,7 +157,7 @@ class QuizGame:
         correct_count = 0
         hints_used = 0
 
-        print(f"📝 퀴즈를 시작합니다! (총 {total_questions}문제, 랜덤 출제)")
+        print(self._info_text(f"퀴즈를 시작합니다! (총 {total_questions}문제, 랜덤 출제)", "📝"))
         print()
 
         for index, quiz in enumerate(selected_quizzes, start=1):
@@ -167,9 +168,9 @@ class QuizGame:
 
             if quiz.is_correct(selected_answer):
                 correct_count += 1
-                print("정답입니다!")
+                print(self._success_text("정답입니다!"))
             else:
-                print(f"오답입니다. 정답은 {quiz.answer}번입니다.")
+                print(self._error_text(f"오답입니다. 정답은 {quiz.answer}번입니다."))
 
             print()
 
@@ -183,21 +184,19 @@ class QuizGame:
         }
         self._append_score_history(result)
 
-        print("=" * 40)
-        print(
-            f"결과: {total_questions}문제 중 {correct_count}문제 정답! ({points}점)"
-        )
+        print(self._style("=" * 40, color="36", bold=True))
+        print(self._highlight_text(f"결과: {total_questions}문제 중 {correct_count}문제 정답! ({points}점)", "🎯"))
         if hints_used:
-            print(f"힌트 사용: {hints_used}회 (-{hint_penalty}점)")
+            print(self._hint_text(f"힌트 사용: {hints_used}회 (-{hint_penalty}점)"))
 
         if self._is_new_best_score(result):
             self.best_score = result
-            print("새로운 최고 점수입니다!")
+            print(self._score_text("새로운 최고 점수입니다!", "🎉"))
         else:
-            print("최고 점수는 유지되었습니다.")
+            print(self._score_text("최고 점수는 유지되었습니다.", "🏆"))
 
         self._save_state()
-        print("=" * 40)
+        print(self._style("=" * 40, color="36", bold=True))
         print()
 
     def _select_question_count(self) -> int:
@@ -206,7 +205,7 @@ class QuizGame:
         if available_count == 1:
             return 1
 
-        print(f"현재 등록된 퀴즈는 총 {available_count}개입니다.")
+        print(self._info_text(f"현재 등록된 퀴즈는 총 {available_count}개입니다.", "📚"))
         return self._prompt_number(
             f"이번에 풀 문제 수를 선택하세요 (1-{available_count}): ",
             1,
@@ -214,7 +213,7 @@ class QuizGame:
         )
 
     def add_quiz(self) -> None:
-        print("새로운 퀴즈를 추가합니다.")
+        print(self._info_text("새로운 퀴즈를 추가합니다.", "➕"))
         question = self._prompt_text("문제를 입력하세요: ")
         choices = []
 
@@ -226,16 +225,16 @@ class QuizGame:
         answer = self._prompt_number("정답 번호 (1-4): ", 1, 4)
         self.quizzes.append(Quiz(question, choices, answer, hint))
         self._save_state()
-        print("퀴즈가 추가되었습니다.")
+        print(self._success_text("퀴즈가 추가되었습니다!"))
         print()
 
     def show_quiz_list(self) -> None:
         if not self.quizzes:
-            print("등록된 퀴즈가 없습니다.")
+            print(self._warning_text("등록된 퀴즈가 없습니다."))
             print()
             return
 
-        print(f"등록된 퀴즈 목록 (총 {len(self.quizzes)}개)")
+        print(self._info_text(f"등록된 퀴즈 목록 (총 {len(self.quizzes)}개)", "📋"))
         print("-" * 40)
 
         for index, quiz in enumerate(self.quizzes, start=1):
@@ -246,25 +245,25 @@ class QuizGame:
 
     def show_best_score(self) -> None:
         if not self.best_score:
-            print("아직 저장된 최고 점수가 없습니다. 먼저 퀴즈를 풀어 보세요.")
+            print(self._warning_text("아직 저장된 최고 점수가 없습니다. 먼저 퀴즈를 풀어 보세요."))
             print()
             return
 
         score_text = self._format_score(self.best_score)
-        print(f"최고 점수: {score_text}")
+        print(self._score_text(f"최고 점수: {score_text}"))
         if self.score_history:
-            print("최근 기록:")
+            print(self._info_text("최근 기록:", "🕘"))
             for record in self.score_history[-5:]:
                 print(f"- {self._format_history_record(record)}")
         print()
 
     def delete_quiz(self) -> None:
         if not self.quizzes:
-            print("삭제할 퀴즈가 없습니다.")
+            print(self._warning_text("삭제할 퀴즈가 없습니다."))
             print()
             return
 
-        print(f"삭제할 퀴즈를 선택하세요. (총 {len(self.quizzes)}개)")
+        print(self._info_text(f"삭제할 퀴즈를 선택하세요. (총 {len(self.quizzes)}개)", "🗑️"))
         print("-" * 40)
         for index, quiz in enumerate(self.quizzes, start=1):
             print(f"[{index}] {quiz.question}")
@@ -277,13 +276,13 @@ class QuizGame:
         )
 
         if selected_index == 0:
-            print("퀴즈 삭제를 취소했습니다.")
+            print(self._info_text("퀴즈 삭제를 취소했습니다.", "↩️"))
             print()
             return
 
         deleted_quiz = self.quizzes.pop(selected_index - 1)
         self._save_state()
-        print(f"삭제되었습니다: {deleted_quiz.question}")
+        print(self._success_text(f"삭제되었습니다: {deleted_quiz.question}", icon="🗑️"))
         print()
 
     def _load_state(self) -> None:
@@ -293,6 +292,7 @@ class QuizGame:
             self.startup_message = (
                 "state.json이 없어 기본 퀴즈 데이터로 새로 시작합니다."
             )
+            self.startup_message_level = "info"
             self._save_state()
             return
 
@@ -312,6 +312,7 @@ class QuizGame:
                 raw_state.get("score_history", [])
             )
             self.startup_message = self._build_loaded_message()
+            self.startup_message_level = "info"
         except (OSError, json.JSONDecodeError, ValueError, TypeError):
             self.quizzes = self._default_quizzes()
             self.best_score = None
@@ -319,6 +320,7 @@ class QuizGame:
             self.startup_message = (
                 "state.json이 손상되었거나 읽을 수 없어 기본 데이터로 복구했습니다."
             )
+            self.startup_message_level = "warning"
             self._save_state()
 
     def _save_state(self) -> None:
@@ -332,7 +334,7 @@ class QuizGame:
             with self.state_path.open("w", encoding="utf-8") as file:
                 json.dump(state, file, ensure_ascii=False, indent=4)
         except OSError:
-            print("파일 저장 중 문제가 발생했습니다. 권한과 경로를 확인해 주세요.")
+            print(self._error_text("파일 저장 중 문제가 발생했습니다. 권한과 경로를 확인해 주세요."))
 
     def _default_quizzes(self) -> list[Quiz]:
         return [Quiz.from_dict(quiz_data) for quiz_data in DEFAULT_QUIZ_DATA]
@@ -357,11 +359,11 @@ class QuizGame:
                 raw_value = self._safe_input("정답 입력 (1-4): ").strip()
 
             if not raw_value:
-                print("입력이 비어 있습니다. 다시 입력해 주세요.")
+                print(self._warning_text("입력이 비어 있습니다. 다시 입력해 주세요."))
                 continue
 
             if quiz.has_hint() and raw_value.lower() == "h":
-                print(f"힌트: {quiz.hint}")
+                print(self._hint_text(f"힌트: {quiz.hint}"))
                 hint_was_used = True
                 continue
 
@@ -369,13 +371,13 @@ class QuizGame:
                 selected_answer = int(raw_value)
             except ValueError:
                 if quiz.has_hint():
-                    print("잘못된 입력입니다. 1-4 또는 h를 입력하세요.")
+                    print(self._warning_text("잘못된 입력입니다. 1-4 또는 h를 입력하세요."))
                 else:
-                    print("잘못된 입력입니다. 1-4 사이의 숫자를 입력하세요.")
+                    print(self._warning_text("잘못된 입력입니다. 1-4 사이의 숫자를 입력하세요."))
                 continue
 
             if selected_answer < 1 or selected_answer > 4:
-                print("허용 범위를 벗어났습니다. 1-4 사이의 숫자를 입력하세요.")
+                print(self._warning_text("허용 범위를 벗어났습니다. 1-4 사이의 숫자를 입력하세요."))
                 continue
 
             return selected_answer, hint_was_used
@@ -487,3 +489,49 @@ class QuizGame:
             history_text += f" | 힌트 {record['hints_used']}회"
 
         return history_text
+
+    def _supports_color(self) -> bool:
+        return sys.stdout.isatty() and os.getenv("TERM", "").lower() != "dumb"
+
+    def _style(self, text: str, color: Optional[str] = None, bold: bool = False) -> str:
+        if not self.use_color:
+            return text
+
+        codes = []
+        if bold:
+            codes.append("1")
+        if color:
+            codes.append(color)
+
+        if not codes:
+            return text
+
+        return f"\033[{';'.join(codes)}m{text}\033[0m"
+
+    def _status_text(self, text: str, level: str = "info") -> str:
+        if level == "warning":
+            return self._warning_text(text)
+        if level == "error":
+            return self._error_text(text)
+        return self._info_text(text, "📂")
+
+    def _info_text(self, text: str, icon: str = "ℹ️") -> str:
+        return self._style(f"{icon} {text}", color="36", bold=True)
+
+    def _warning_text(self, text: str) -> str:
+        return self._style(f"⚠️ {text}", color="33", bold=True)
+
+    def _success_text(self, text: str, icon: str = "✅") -> str:
+        return self._style(f"{icon} {text}", color="32", bold=True)
+
+    def _error_text(self, text: str) -> str:
+        return self._style(f"❌ {text}", color="31", bold=True)
+
+    def _hint_text(self, text: str) -> str:
+        return self._style(f"💡 {text}", color="36", bold=True)
+
+    def _score_text(self, text: str, icon: str = "🏆") -> str:
+        return self._style(f"{icon} {text}", color="33", bold=True)
+
+    def _highlight_text(self, text: str, icon: str = "🎯") -> str:
+        return self._style(f"{icon} {text}", color="35", bold=True)
