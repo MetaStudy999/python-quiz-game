@@ -1,3 +1,6 @@
+import json
+from pathlib import Path
+
 from quiz import Quiz
 
 
@@ -37,8 +40,10 @@ DEFAULT_QUIZ_DATA = [
 
 class QuizGame:
     def __init__(self) -> None:
-        self.quizzes = DEFAULT_QUIZ_DATA
+        self.state_path = Path(__file__).resolve().parent / "state.json"
+        self.quizzes = []
         self.best_score = 0
+        self.load_state()
 
     def run(self) -> None:
         self.show_title()
@@ -56,6 +61,7 @@ class QuizGame:
             elif selected_menu == 4:
                 self.show_best_score()
             else:
+                self.save_state()
                 print("프로그램을 종료합니다.")
                 break
 
@@ -134,6 +140,7 @@ class QuizGame:
         if score > self.best_score:
             self.best_score = score
             print("새로운 최고 점수입니다!")
+            self.save_state()
 
         print("=" * 40)
         print(f"결과: {total_questions}문제 중 {correct_count}문제 정답! ({score}점)")
@@ -151,6 +158,7 @@ class QuizGame:
 
         answer = self.prompt_number("정답 번호 (1-4): ", 1, 4)
         self.quizzes.append(Quiz(question, choices, answer))
+        self.save_state()
         print("퀴즈가 추가되었습니다.")
         print()
 
@@ -177,3 +185,25 @@ class QuizGame:
 
         print(f"현재 최고 점수: {self.best_score}점")
         print()
+
+    def load_state(self) -> None:
+        if not self.state_path.exists():
+            self.quizzes = list(DEFAULT_QUIZ_DATA)
+            self.best_score = 0
+            self.save_state()
+            return
+
+        with self.state_path.open("r", encoding="utf-8") as file:
+            state = json.load(file)
+
+        self.quizzes = [Quiz.from_dict(item) for item in state.get("quizzes", [])]
+        self.best_score = state.get("best_score", 0)
+
+    def save_state(self) -> None:
+        state = {
+            "quizzes": [quiz.to_dict() for quiz in self.quizzes],
+            "best_score": self.best_score,
+        }
+
+        with self.state_path.open("w", encoding="utf-8") as file:
+            json.dump(state, file, ensure_ascii=False, indent=4)

@@ -1,0 +1,35 @@
+{
+    "quizzes": [
+        {
+            "question": "Python에서 문자열을 이어 붙일 때 사용하는 연산자는 무엇인가요?",
+            "choices": ["+", "-", "*", "/"],
+            "answer": 1
+        },
+        {
+            "question": "다음 중 리스트를 나타내는 자료형 표기는 무엇인가요?",
+            "choices": ["{}", "()", "[]", "<>"],
+            "answer": 3
+        },
+        {
+            "question": "조건이 참일 때만 코드를 실행하도록 만드는 문장은 무엇인가요?",
+            "choices": ["for", "if", "while", "def"],
+            "answer": 2
+        },
+        {
+            "question": "Git에서 작업 내역을 저장하는 기록 단위를 무엇이라고 하나요?",
+            "choices": ["clone", "branch", "commit", "pull"],
+            "answer": 3
+        },
+        {
+            "question": "원격 저장소의 변경 사항을 내 컴퓨터로 가져오는 Git 명령어는 무엇인가요?",
+            "choices": ["push", "merge", "checkout", "pull"],
+            "answer": 4
+        },
+        {
+            "question": "함수를 정의할 때 사용하는 Python 키워드는 무엇인가요?",
+            "choices": ["class", "return", "def", "import"],
+            "answer": 3
+        }
+    ],
+    "best_score": 0
+}

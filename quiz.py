@@ -11,3 +11,18 @@ class Quiz:
 
     def is_correct(self, selected_answer: int) -> bool:
         return selected_answer == self.answer
+
+    def to_dict(self) -> dict:
+        return {
+            "question": self.question,
+            "choices": self.choices,
+            "answer": self.answer,
+        }
+
+    @classmethod
+    def from_dict(cls, data: dict) -> "Quiz":
+        return cls(
+            data["question"],
+            data["choices"],
+            data["answer"],
+        )
