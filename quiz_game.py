@@ -130,9 +130,13 @@ class QuizGame:
 
             print()
 
-        self.best_score = max(self.best_score, int((correct_count / total_questions) * 100))
+        score = int((correct_count / total_questions) * 100)
+        if score > self.best_score:
+            self.best_score = score
+            print("새로운 최고 점수입니다!")
+
         print("=" * 40)
-        print(f"결과: {total_questions}문제 중 {correct_count}문제 정답!")
+        print(f"결과: {total_questions}문제 중 {correct_count}문제 정답! ({score}점)")
         print("=" * 40)
         print()
 
@@ -166,5 +170,10 @@ class QuizGame:
         print()
 
     def show_best_score(self) -> None:
+        if self.best_score == 0:
+            print("아직 저장된 최고 점수가 없습니다. 먼저 퀴즈를 풀어 보세요.")
+            print()
+            return
+
         print(f"현재 최고 점수: {self.best_score}점")
         print()
