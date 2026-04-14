@@ -1,5 +1,6 @@
 import json
 import random
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -55,6 +56,7 @@ class QuizGame:
         self.state_path = state_path or Path(__file__).resolve().parent / "state.json"
         self.quizzes: list[Quiz] = []
         self.best_score: Optional[dict] = None
+        self.score_history: list[dict] = []
         self.startup_message = ""
         self._load_state()
 
@@ -179,6 +181,7 @@ class QuizGame:
             "total_questions": total_questions,
             "hints_used": hints_used,
         }
+        self._append_score_history(result)
 
         print("=" * 40)
         print(
@@ -189,11 +192,11 @@ class QuizGame:
 
         if self._is_new_best_score(result):
             self.best_score = result
-            self._save_state()
             print("새로운 최고 점수입니다!")
         else:
             print("최고 점수는 유지되었습니다.")
 
+        self._save_state()
         print("=" * 40)
         print()
 
@@ -249,6 +252,10 @@ class QuizGame:
 
         score_text = self._format_score(self.best_score)
         print(f"최고 점수: {score_text}")
+        if self.score_history:
+            print("최근 기록:")
+            for record in self.score_history[-5:]:
+                print(f"- {self._format_history_record(record)}")
         print()
 
     def delete_quiz(self) -> None:
@@ -301,10 +308,14 @@ class QuizGame:
 
             self.quizzes = self._load_quizzes(raw_state.get("quizzes", []))
             self.best_score = self._load_best_score(raw_state.get("best_score"))
+            self.score_history = self._load_score_history(
+                raw_state.get("score_history", [])
+            )
             self.startup_message = self._build_loaded_message()
         except (OSError, json.JSONDecodeError, ValueError, TypeError):
             self.quizzes = self._default_quizzes()
             self.best_score = None
+            self.score_history = []
             self.startup_message = (
                 "state.json이 손상되었거나 읽을 수 없어 기본 데이터로 복구했습니다."
             )
@@ -314,6 +325,7 @@ class QuizGame:
         state = {
             "quizzes": [quiz.to_dict() for quiz in self.quizzes],
             "best_score": self.best_score,
+            "score_history": self.score_history,
         }
 
         try:
@@ -368,6 +380,37 @@ class QuizGame:
 
             return selected_answer, hint_was_used
 
+    def _append_score_history(self, result: dict) -> None:
+        history_record = {
+            "played_at": datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S"),
+            "total_questions": result["total_questions"],
+            "correct_count": result["correct_count"],
+            "points": result["points"],
+            "hints_used": result.get("hints_used", 0),
+        }
+        self.score_history.append(history_record)
+
+    def _load_score_history(self, raw_history: list[dict]) -> list[dict]:
+        if not isinstance(raw_history, list):
+            raise ValueError("score_history 데이터는 리스트여야 합니다.")
+
+        history = []
+        for raw_record in raw_history:
+            if not isinstance(raw_record, dict):
+                raise ValueError("점수 기록 형식이 올바르지 않습니다.")
+
+            history.append(
+                {
+                    "played_at": str(raw_record.get("played_at", "")),
+                    "total_questions": int(raw_record.get("total_questions", 0)),
+                    "correct_count": int(raw_record.get("correct_count", 0)),
+                    "points": int(raw_record.get("points", 0)),
+                    "hints_used": int(raw_record.get("hints_used", 0)),
+                }
+            )
+
+        return history
+
     def _load_best_score(self, raw_best_score: Optional[dict]) -> Optional[dict]:
         if raw_best_score is None:
             return None
@@ -421,7 +464,7 @@ class QuizGame:
 
         return (
             f"저장된 데이터를 불러왔습니다. "
-            f"(퀴즈 {len(self.quizzes)}개, 최고 점수 {best_score_text})"
+            f"(퀴즈 {len(self.quizzes)}개, 최고 점수 {best_score_text}, 기록 {len(self.score_history)}개)"
         )
 
     def _format_score(self, score: dict) -> str:
@@ -432,3 +475,15 @@ class QuizGame:
             f"{score['points']}점 "
             f"({score['total_questions']}문제 중 {score['correct_count']}문제 정답)"
         )
+
+    def _format_history_record(self, record: dict) -> str:
+        history_text = (
+            f"{record['played_at']} | "
+            f"{record['total_questions']}문제 중 {record['correct_count']}문제 정답 | "
+            f"{record['points']}점"
+        )
+
+        if record.get("hints_used", 0):
+            history_text += f" | 힌트 {record['hints_used']}회"
+
+        return history_text
