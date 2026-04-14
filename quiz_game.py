@@ -1,4 +1,5 @@
 import json
+import random
 from pathlib import Path
 from typing import Optional
 
@@ -138,13 +139,14 @@ class QuizGame:
             print()
             return
 
-        total_questions = len(self.quizzes)
+        selected_quizzes = random.sample(self.quizzes, k=len(self.quizzes))
+        total_questions = len(selected_quizzes)
         correct_count = 0
 
-        print(f"📝 퀴즈를 시작합니다! (총 {total_questions}문제)")
+        print(f"📝 퀴즈를 시작합니다! (총 {total_questions}문제, 랜덤 출제)")
         print()
 
-        for index, quiz in enumerate(self.quizzes, start=1):
+        for index, quiz in enumerate(selected_quizzes, start=1):
             quiz.display(index)
             selected_answer = self._prompt_number("정답 입력 (1-4): ", 1, 4)
 
