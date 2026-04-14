@@ -97,7 +97,34 @@ class QuizGame:
             return number
 
     def play_quiz(self) -> None:
-        print("퀴즈 풀기 기능을 준비 중입니다.")
+        if not self.quizzes:
+            print("등록된 퀴즈가 없어 게임을 시작할 수 없습니다.")
+            print()
+            return
+
+        total_questions = len(self.quizzes)
+        correct_count = 0
+
+        print(f"퀴즈를 시작합니다! (총 {total_questions}문제)")
+        print()
+
+        for index, quiz in enumerate(self.quizzes, start=1):
+            print(f"[문제 {index}]")
+            quiz.display()
+            selected_answer = self.prompt_number("정답 입력 (1-4): ", 1, 4)
+
+            if quiz.is_correct(selected_answer):
+                correct_count += 1
+                print("정답입니다!")
+            else:
+                print(f"오답입니다. 정답은 {quiz.answer}번입니다.")
+
+            print()
+
+        self.best_score = max(self.best_score, int((correct_count / total_questions) * 100))
+        print("=" * 40)
+        print(f"결과: {total_questions}문제 중 {correct_count}문제 정답!")
+        print("=" * 40)
         print()
 
     def add_quiz(self) -> None:
