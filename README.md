@@ -29,6 +29,20 @@
 - 매개변수: 함수를 실행할 때 함수 안으로 전달하는 값입니다. 예: 문제 번호, 안내 문구
 - 반환값: 함수가 실행을 마친 뒤 바깥으로 돌려주는 결과값입니다. 예: 사용자가 입력한 숫자
 
+현재 코드 예시:
+
+```python
+question_count = self._select_question_count()
+selected_quizzes = random.sample(self.quizzes, k=question_count)
+
+for index, quiz in enumerate(selected_quizzes, start=1):
+    selected_answer, used_hint = self._prompt_answer_with_hint(quiz)
+    if quiz.is_correct(selected_answer):
+        correct_count += 1
+```
+
+위 코드는 변수(`question_count`), 정수(`correct_count`), 리스트(`selected_quizzes`), 조건문(`if`), 반복문(`for`), 함수 호출(`self._select_question_count()`)이 실제로 어떻게 함께 쓰이는지 보여 줍니다.
+
 ### 클래스와 객체
 
 - 클래스: 비슷한 데이터와 기능을 한 틀로 묶어 두는 설계도입니다. 예: `Quiz`, `QuizGame`
@@ -38,6 +52,22 @@
 - 속성(attribute): 객체가 가지고 있는 데이터입니다. 예: 문제, 선택지, 정답, 힌트
 - 메서드(method): 객체가 할 수 있는 동작입니다. 예: 퀴즈 출력, 정답 확인, 게임 시작
 
+현재 코드 예시:
+
+```python
+class Quiz:
+    def __init__(self, question: str, choices: list[str], answer: int, hint: str = "") -> None:
+        self.question = question.strip()
+        self.choices = [choice.strip() for choice in choices]
+        self.answer = answer
+        self.hint = hint.strip()
+
+game = QuizGame()
+game.run()
+```
+
+위 코드는 `Quiz`와 `QuizGame`이 클래스이고, `game = QuizGame()`처럼 실제로 만든 값이 객체라는 점을 보여 줍니다. `self.question`, `self.answer`는 속성이고, `run()`은 메서드입니다.
+
 ### 파일 입출력
 
 - 파일 열기: 저장된 내용을 읽거나 새 내용을 쓰기 위해 파일을 사용하는 첫 단계입니다.
@@ -46,6 +76,18 @@
 - JSON: 리스트와 딕셔너리처럼 구조화된 데이터를 저장하기 좋은 형식입니다. 사람이 읽기 쉽고 프로그램도 다루기 쉽습니다.
 - `state.json`: 퀴즈 목록, 최고 점수, 점수 기록을 저장하는 프로젝트의 데이터 파일입니다.
 - `try/except`: 오류가 나더라도 프로그램이 갑자기 종료되지 않도록 대비하는 문법입니다. 예: 파일이 없거나 JSON이 손상된 경우 처리
+
+현재 코드 예시:
+
+```python
+try:
+    with self.state_path.open("w", encoding="utf-8") as file:
+        json.dump(state, file, ensure_ascii=False, indent=4)
+except OSError:
+    print(self._error_text("파일 저장 중 문제가 발생했습니다. 권한과 경로를 확인해 주세요."))
+```
+
+위 코드는 `state.json` 파일을 UTF-8로 저장하는 부분입니다. `json.dump()`로 딕셔너리 데이터를 JSON으로 바꾸고, `try/except`로 저장 오류가 나더라도 프로그램이 갑자기 종료되지 않게 처리합니다.
 
 ### Git 기초
 
@@ -59,6 +101,20 @@
 - `clone`: 원격 저장소를 내 컴퓨터로 그대로 복제하는 명령어입니다. 예: `git clone https://github.com/MetaStudy999/python-quiz-game.git`
 - 브랜치(branch): 메인 작업과 분리해서 새 기능을 안전하게 개발하는 작업 공간입니다. 예: `feature/play-quiz`
 - `merge`: 브랜치에서 작업한 내용을 다시 `main` 브랜치에 합치는 과정입니다. 예: `git merge feature/play-quiz`
+
+이 프로젝트에서 실제 사용한 예시:
+
+```bash
+git checkout -b feature/play-quiz
+git commit -m "Feat: 퀴즈 출제 기능 구현"
+git checkout main
+git merge feature/play-quiz
+git push origin main
+git clone https://github.com/MetaStudy999/python-quiz-game.git
+git pull origin main
+```
+
+위 명령들은 이 프로젝트를 개발하면서 실제로 사용한 흐름입니다. 브랜치를 나눠 기능을 만들고, `merge`로 합친 뒤, GitHub에 `push`하고 다시 `clone`과 `pull`까지 수행했습니다.
 
 ## 실행 방법
 
