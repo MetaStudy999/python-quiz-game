@@ -50,15 +50,15 @@
 ### Git 기초
 
 - Git: 파일 변경 이력을 기록하는 도구입니다. 무엇을 언제 바꿨는지 남기고 되돌아보기에 좋습니다.
-- `init`: 현재 폴더를 Git 저장소로 시작하는 명령어입니다.
-- `add`: 다음 커밋에 포함할 파일을 선택하는 명령어입니다.
-- `commit`: 선택한 변경 내용을 하나의 기록으로 저장하는 명령어입니다.
-- `push`: 내 컴퓨터의 커밋을 GitHub 같은 원격 저장소로 올리는 명령어입니다.
-- `pull`: 원격 저장소의 최신 변경 내용을 내 컴퓨터로 가져오는 명령어입니다.
-- `checkout`: 다른 브랜치로 이동하거나 새 브랜치를 만들어 전환할 때 사용하는 명령어입니다.
-- `clone`: 원격 저장소를 내 컴퓨터로 그대로 복제하는 명령어입니다.
-- 브랜치(branch): 메인 작업과 분리해서 새 기능을 안전하게 개발하는 작업 공간입니다.
-- `merge`: 브랜치에서 작업한 내용을 다시 `main` 브랜치에 합치는 과정입니다.
+- `init`: 현재 폴더를 Git 저장소로 시작하는 명령어입니다. 예: `git init`
+- `add`: 다음 커밋에 포함할 파일을 선택하는 명령어입니다. 예: `git add README.md`, `git add .`
+- `commit`: 선택한 변경 내용을 하나의 기록으로 저장하는 명령어입니다. 예: `git commit -m "Feat: 퀴즈 출제 기능 구현"`
+- `push`: 내 컴퓨터의 커밋을 GitHub 같은 원격 저장소로 올리는 명령어입니다. 예: `git push origin main`
+- `pull`: 원격 저장소의 최신 변경 내용을 내 컴퓨터로 가져오는 명령어입니다. 예: `git pull origin main`
+- `checkout`: 다른 브랜치로 이동하거나 새 브랜치를 만들어 전환할 때 사용하는 명령어입니다. 예: `git checkout -b feature/play-quiz`, `git checkout main`
+- `clone`: 원격 저장소를 내 컴퓨터로 그대로 복제하는 명령어입니다. 예: `git clone https://github.com/MetaStudy999/python-quiz-game.git`
+- 브랜치(branch): 메인 작업과 분리해서 새 기능을 안전하게 개발하는 작업 공간입니다. 예: `feature/play-quiz`
+- `merge`: 브랜치에서 작업한 내용을 다시 `main` 브랜치에 합치는 과정입니다. 예: `git merge feature/play-quiz`
 
 ## 실행 방법
 
