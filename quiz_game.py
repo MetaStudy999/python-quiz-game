@@ -139,7 +139,8 @@ class QuizGame:
             print()
             return
 
-        selected_quizzes = random.sample(self.quizzes, k=len(self.quizzes))
+        question_count = self._select_question_count()
+        selected_quizzes = random.sample(self.quizzes, k=question_count)
         total_questions = len(selected_quizzes)
         correct_count = 0
 
@@ -179,6 +180,19 @@ class QuizGame:
 
         print("=" * 40)
         print()
+
+    def _select_question_count(self) -> int:
+        available_count = len(self.quizzes)
+
+        if available_count == 1:
+            return 1
+
+        print(f"현재 등록된 퀴즈는 총 {available_count}개입니다.")
+        return self._prompt_number(
+            f"이번에 풀 문제 수를 선택하세요 (1-{available_count}): ",
+            1,
+            available_count,
+        )
 
     def add_quiz(self) -> None:
         print("새로운 퀴즈를 추가합니다.")
