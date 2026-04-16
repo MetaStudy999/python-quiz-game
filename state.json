@@ -104,6 +104,27 @@
             "correct_count": 2,
             "points": 56,
             "hints_used": 1
+        },
+        {
+            "played_at": "2026-04-16 14:33:01",
+            "total_questions": 1,
+            "correct_count": 1,
+            "points": 90,
+            "hints_used": 1
+        },
+        {
+            "played_at": "2026-04-16 14:33:55",
+            "total_questions": 3,
+            "correct_count": 2,
+            "points": 66,
+            "hints_used": 0
+        },
+        {
+            "played_at": "2026-04-16 15:44:42",
+            "total_questions": 7,
+            "correct_count": 2,
+            "points": 18,
+            "hints_used": 1
         }
     ]
 }
