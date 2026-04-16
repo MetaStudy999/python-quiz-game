@@ -503,6 +503,7 @@ JSON 형식의 특징도 함께 이해하면 좋습니다.
 
 - [`github-repo.png`](docs/screenshots/github-repo.png): GitHub 원격 저장소 화면입니다. 프로젝트 코드와 README가 업로드된 상태를 확인할 수 있습니다.
 
+
 ## 추천 Git 작업 순서
 
 아래 순서대로 진행하면 미션 요구사항의 커밋 흐름을 자연스럽게 만들 수 있습니다.
