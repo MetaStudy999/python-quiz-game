@@ -222,7 +222,7 @@ python-quiz-game/
 ## 데이터 파일 설명
 
 - 경로: 프로젝트 루트의 `state.json`
-- 역할: 퀴즈 목록과 최고 점수를 저장합니다.
+- 역할: 퀴즈 목록, 최고 점수, 점수 기록을 저장합니다.
 - 인코딩: UTF-8
 
 예시 스키마:
@@ -240,8 +240,7 @@ python-quiz-game/
     "best_score": {
         "points": 80,
         "correct_count": 4,
-        "total_questions": 5,
-        "hints_used": 1
+        "total_questions": 5
     },
     "score_history": [
         {
