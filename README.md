@@ -77,7 +77,54 @@ game.run()
 - `state.json`: 퀴즈 목록, 최고 점수, 점수 기록을 저장하는 프로젝트의 데이터 파일입니다.
 - `try/except`: 오류가 나더라도 프로그램이 갑자기 종료되지 않도록 대비하는 문법입니다. 예: 파일이 없거나 JSON이 손상된 경우 처리
 
-현재 코드 예시:
+간단한 문법 예시:
+
+파일 열기:
+
+```python
+with open("state.json", "r", encoding="utf-8") as file:
+    print("파일을 열었습니다.")
+```
+
+파일 읽기:
+
+```python
+with open("state.json", "r", encoding="utf-8") as file:
+    text = file.read()
+```
+
+파일 쓰기:
+
+```python
+with open("memo.txt", "w", encoding="utf-8") as file:
+    file.write("안녕하세요")
+```
+
+JSON 읽기/쓰기:
+
+```python
+import json
+
+with open("state.json", "r", encoding="utf-8") as file:
+    data = json.load(file)
+
+with open("state.json", "w", encoding="utf-8") as file:
+    json.dump(data, file, ensure_ascii=False, indent=4)
+```
+
+`try/except` 예시:
+
+```python
+try:
+    with open("state.json", "r", encoding="utf-8") as file:
+        data = json.load(file)
+except FileNotFoundError:
+    data = {"quizzes": [], "best_score": None, "score_history": []}
+except json.JSONDecodeError:
+    data = {"quizzes": [], "best_score": None, "score_history": []}
+```
+
+현재 프로젝트 코드 예시:
 
 ```python
 try:
@@ -87,7 +134,7 @@ except OSError:
     print(self._error_text("파일 저장 중 문제가 발생했습니다. 권한과 경로를 확인해 주세요."))
 ```
 
-위 코드는 `state.json` 파일을 UTF-8로 저장하는 부분입니다. `json.dump()`로 딕셔너리 데이터를 JSON으로 바꾸고, `try/except`로 저장 오류가 나더라도 프로그램이 갑자기 종료되지 않게 처리합니다.
+위 코드는 이 프로젝트에서 `state.json` 파일을 UTF-8로 저장하는 실제 부분입니다. 기본 `open()` 대신 `Path.open()`을 사용했고, `json.dump()`로 딕셔너리 데이터를 JSON으로 저장하며, `try/except`로 저장 오류까지 처리합니다.
 
 ### Git 기초
 
