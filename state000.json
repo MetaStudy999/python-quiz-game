@@ -65,17 +65,6 @@
             ],
             "answer": 3,
             "hint": "define의 앞부분을 줄여 쓴 형태입니다."
-        },
-        {
-            "question": "파이썬에서 변수에 대한 설명으로 가장 알맞은 것은 무엇인가요?",
-            "choices": [
-                "값을 출력만 하는 명령어이다.",
-                "값을 저장해 두는 이름이다.",
-                "무조건 숫자만 저장할 수 있다.",
-                "한 번 저장한 값은 절대 바꿀 수 없다."
-            ],
-            "answer": 2,
-            "hint": "변수는 데이터를 담아두고 다시 사용할 때 필요합니다."
         }
     ],
     "best_score": {
@@ -85,25 +74,18 @@
     },
     "score_history": [
         {
-            "played_at": "2026-04-16 14:08:10",
+            "played_at": "2026-04-14 22:08:22",
             "total_questions": 1,
             "correct_count": 1,
             "points": 100,
             "hints_used": 0
         },
         {
-            "played_at": "2026-04-16 14:13:37",
-            "total_questions": 3,
-            "correct_count": 2,
-            "points": 66,
+            "played_at": "2026-04-16 13:52:14",
+            "total_questions": 1,
+            "correct_count": 1,
+            "points": 100,
             "hints_used": 0
-        },
-        {
-            "played_at": "2026-04-16 14:14:54",
-            "total_questions": 3,
-            "correct_count": 2,
-            "points": 56,
-            "hints_used": 1
         }
     ]
 }

@@ -1,7 +1,5 @@
 import json
-import os
 import random
-import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -50,18 +48,19 @@ DEFAULT_QUIZ_DATA = [
 
 
 class SafeExitRequested(Exception):
+    # Ctrl+C나 EOF가 발생했을 때 비정상 종료 대신 안전 종료 흐름으로 넘깁니다.
     pass
 
 
 class QuizGame:
     def __init__(self, state_path: Optional[Path] = None) -> None:
+        # 기본 저장 위치는 프로젝트 루트의 state.json입니다.
         self.state_path = state_path or Path(__file__).resolve().parent / "state.json"
         self.quizzes: list[Quiz] = []
         self.best_score: Optional[dict] = None
         self.score_history: list[dict] = []
         self.startup_message = ""
         self.startup_message_level = "info"
-        self.use_color = self._supports_color()
         self._load_state()
 
     def run(self) -> None:
@@ -96,19 +95,19 @@ class QuizGame:
             self._save_state()
 
     def _print_title(self) -> None:
-        line = self._style("=" * 40, color="36", bold=True)
+        line = self._style("=" * 40, bold=True)
         print(line)
-        print(self._style("      🎯 나만의 퀴즈 게임 🎯", color="35", bold=True))
+        print(self._style("      🎯 나만의 퀴즈 게임 🎯", bold=True))
         print(line)
 
     def _print_menu(self) -> None:
-        print(self._style("1. 📝 퀴즈 풀기", color="36"))
-        print(self._style("2. ➕ 퀴즈 추가", color="32"))
-        print(self._style("3. 📋 퀴즈 목록", color="34"))
-        print(self._style("4. 🏆 점수 확인", color="33"))
-        print(self._style("5. 🗑️ 퀴즈 삭제", color="31"))
-        print(self._style("6. 👋 종료", color="35"))
-        print(self._style("=" * 40, color="36", bold=True))
+        print(self._style("1. 📝 퀴즈 풀기"))
+        print(self._style("2. ➕ 퀴즈 추가"))
+        print(self._style("3. 📋 퀴즈 목록"))
+        print(self._style("4. 🏆 점수 확인"))
+        print(self._style("5. 🗑️ 퀴즈 삭제"))
+        print(self._style("6. 👋 종료"))
+        print(self._style("=" * 40, bold=True))
 
     def _prompt_text(self, message: str) -> str:
         while True:
@@ -143,6 +142,7 @@ class QuizGame:
         try:
             return input(message)
         except (EOFError, KeyboardInterrupt) as error:
+            # 입력 중단도 예외를 삼켜 버리지 않고, 저장 후 종료할 수 있게 변환합니다.
             raise SafeExitRequested from error
 
     def play_quiz(self) -> None:
@@ -152,6 +152,7 @@ class QuizGame:
             return
 
         question_count = self._select_question_count()
+        # 같은 문제만 반복되지 않도록 현재 퀴즈 목록에서 무작위로 뽑습니다.
         selected_quizzes = random.sample(self.quizzes, k=question_count)
         total_questions = len(selected_quizzes)
         correct_count = 0
@@ -175,6 +176,7 @@ class QuizGame:
             print()
 
         hint_penalty = hints_used * 10
+        # 기본 점수에서 힌트 사용 횟수만큼 감점하되, 최종 점수는 0점 아래로 내려가지 않게 합니다.
         points = max(0, int((correct_count / total_questions) * 100) - hint_penalty)
         result = {
             "points": points,
@@ -184,7 +186,7 @@ class QuizGame:
         }
         self._append_score_history(result)
 
-        print(self._style("=" * 40, color="36", bold=True))
+        print(self._style("=" * 40, bold=True))
         print(self._highlight_text(f"결과: {total_questions}문제 중 {correct_count}문제 정답! ({points}점)", "🎯"))
         if hints_used:
             print(self._hint_text(f"힌트 사용: {hints_used}회 (-{hint_penalty}점)"))
@@ -196,7 +198,7 @@ class QuizGame:
             print(self._score_text("최고 점수는 유지되었습니다.", "🏆"))
 
         self._save_state()
-        print(self._style("=" * 40, color="36", bold=True))
+        print(self._style("=" * 40, bold=True))
         print()
 
     def _select_question_count(self) -> int:
@@ -287,6 +289,7 @@ class QuizGame:
 
     def _load_state(self) -> None:
         if not self.state_path.exists():
+            # 첫 실행이라면 기본 퀴즈를 만들고 바로 파일로 저장해 둡니다.
             self.quizzes = self._default_quizzes()
             self.best_score = None
             self.startup_message = (
@@ -314,6 +317,7 @@ class QuizGame:
             self.startup_message = self._build_loaded_message()
             self.startup_message_level = "info"
         except (OSError, json.JSONDecodeError, ValueError, TypeError):
+            # 파일이 없거나 손상돼도 프로그램은 실행되도록 기본 데이터로 복구합니다.
             self.quizzes = self._default_quizzes()
             self.best_score = None
             self.score_history = []
@@ -324,6 +328,7 @@ class QuizGame:
             self._save_state()
 
     def _save_state(self) -> None:
+        # Quiz 객체는 그대로 JSON에 저장할 수 없어서 딕셔너리 형태로 변환합니다.
         state = {
             "quizzes": [quiz.to_dict() for quiz in self.quizzes],
             "best_score": self.best_score,
@@ -364,6 +369,7 @@ class QuizGame:
 
             if quiz.has_hint() and raw_value.lower() == "h":
                 print(self._hint_text(f"힌트: {quiz.hint}"))
+                # 힌트는 여러 번 볼 수 있지만, 감점 횟수는 문제당 한 번만 기록합니다.
                 hint_was_used = True
                 continue
 
@@ -383,6 +389,7 @@ class QuizGame:
             return selected_answer, hint_was_used
 
     def _append_score_history(self, result: dict) -> None:
+        # 플레이 시점을 함께 저장해 두면 나중에 기록을 시간순으로 확인할 수 있습니다.
         history_record = {
             "played_at": datetime.now().astimezone().strftime("%Y-%m-%d %H:%M:%S"),
             "total_questions": result["total_questions"],
@@ -418,6 +425,7 @@ class QuizGame:
             return None
 
         if isinstance(raw_best_score, int):
+            # 이전 버전에서 최고 점수를 숫자 하나로만 저장한 경우도 읽을 수 있게 둡니다.
             return {
                 "points": raw_best_score,
                 "correct_count": 0,
@@ -490,23 +498,8 @@ class QuizGame:
 
         return history_text
 
-    def _supports_color(self) -> bool:
-        return sys.stdout.isatty() and os.getenv("TERM", "").lower() != "dumb"
-
-    def _style(self, text: str, color: Optional[str] = None, bold: bool = False) -> str:
-        if not self.use_color:
-            return text
-
-        codes = []
-        if bold:
-            codes.append("1")
-        if color:
-            codes.append(color)
-
-        if not codes:
-            return text
-
-        return f"\033[{';'.join(codes)}m{text}\033[0m"
+    def _style(self, text: str, bold: bool = False) -> str:
+        return text
 
     def _status_text(self, text: str, level: str = "info") -> str:
         if level == "warning":
@@ -516,22 +509,22 @@ class QuizGame:
         return self._info_text(text, "📂")
 
     def _info_text(self, text: str, icon: str = "ℹ️") -> str:
-        return self._style(f"{icon} {text}", color="36", bold=True)
+        return self._style(f"{icon} {text}", bold=True)
 
     def _warning_text(self, text: str) -> str:
-        return self._style(f"⚠️ {text}", color="33", bold=True)
+        return self._style(f"⚠️ {text}", bold=True)
 
     def _success_text(self, text: str, icon: str = "✅") -> str:
-        return self._style(f"{icon} {text}", color="32", bold=True)
+        return self._style(f"{icon} {text}", bold=True)
 
     def _error_text(self, text: str) -> str:
-        return self._style(f"❌ {text}", color="31", bold=True)
+        return self._style(f"❌ {text}", bold=True)
 
     def _hint_text(self, text: str) -> str:
-        return self._style(f"💡 {text}", color="36", bold=True)
+        return self._style(f"💡 {text}", bold=True)
 
     def _score_text(self, text: str, icon: str = "🏆") -> str:
-        return self._style(f"{icon} {text}", color="33", bold=True)
+        return self._style(f"{icon} {text}", bold=True)
 
     def _highlight_text(self, text: str, icon: str = "🎯") -> str:
-        return self._style(f"{icon} {text}", color="35", bold=True)
+        return self._style(f"{icon} {text}", bold=True)
